@@ -818,18 +818,26 @@ public class CassandraServer implements Cassandra.Iface
 
     private void deleteColumnOrSuperColumn(RowMutation rm, String cfName, Deletion del)
     {
-        if (del.predicate != null && del.predicate.column_names != null)
+        if (del.predicate != null)
         {
-            for(ByteBuffer c : del.predicate.column_names)
+            if ( del.predicate.column_names != null ) 
             {
-                if (del.super_column == null && Schema.instance.getColumnFamilyType(rm.getTable(), cfName) == ColumnFamilyType.Super)
-                    rm.deleteRange(cfName, SuperColumns.startOf(c), SuperColumns.endOf(c), del.timestamp);
-                else if (del.super_column != null)
-                    rm.delete(cfName, CompositeType.build(del.super_column, c), del.timestamp);
-                else
-                    rm.delete(cfName, c, del.timestamp);
+                for(ByteBuffer c : del.predicate.column_names)
+                {
+                    if (del.super_column == null && Schema.instance.getColumnFamilyType(rm.getTable(), cfName) == ColumnFamilyType.Super)
+                        rm.deleteRange(cfName, SuperColumns.startOf(c), SuperColumns.endOf(c), del.timestamp);
+                    else if (del.super_column != null)
+                        rm.delete(cfName, CompositeType.build(del.super_column, c), del.timestamp);
+                    else
+                        rm.delete(cfName, c, del.timestamp);
+                }
             }
-        }
+            else 
+            {
+                //todo super columns?
+                rm.deleteRange(cfName, del.predicate.getSlice_range().start, del.predicate.getSlice_range().finish, del.timestamp);
+            }
+        } 
         else
         {
             if (del.super_column != null)

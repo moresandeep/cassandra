@@ -359,8 +359,6 @@ public class ThriftValidation
         if (del.predicate != null)
         {
             validateSlicePredicate(metadata, del.super_column, del.predicate);
-            if (del.predicate.slice_range != null)
-                throw new org.apache.cassandra.exceptions.InvalidRequestException("Deletion does not yet support SliceRange predicates.");
         }
 
         if (metadata.cfType == ColumnFamilyType.Standard && del.super_column != null)

@@ -20,6 +20,8 @@ package org.apache.cassandra.thrift;
  *
  */
 
+import java.nio.ByteBuffer;
+
 import org.junit.Test;
 
 import org.apache.cassandra.SchemaLoader;
@@ -27,6 +29,7 @@ import org.apache.cassandra.config.*;
 import org.apache.cassandra.db.marshal.AsciiType;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.exceptions.ConfigurationException;
+import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.locator.LocalStrategy;
 import org.apache.cassandra.locator.NetworkTopologyStrategy;
 import org.apache.cassandra.utils.ByteBufferUtil;
@@ -45,6 +48,29 @@ public class ThriftValidationTest extends SchemaLoader
         ThriftValidation.validateColumnFamily("Keyspace1", "Counter1", true);
     }
 
+    @Test
+    public void testRangeDeletion()
+    {
+        Deletion del = new Deletion();
+        SlicePredicate pred = new SlicePredicate();
+        SliceRange range = new SliceRange();
+        range.setStart(ByteBuffer.wrap("a".getBytes()));
+        range.setFinish(ByteBuffer.wrap("f".getBytes()));
+        pred.setSlice_range(range);
+        del.setPredicate(pred);
+        CFMetaData metaData = Schema.instance.getCFMetaData("Keyspace1", "Standard1");
+        boolean gotException = false;
+        try 
+        {
+            ThriftValidation.validateDeletion(metaData, del);
+        } 
+        catch (InvalidRequestException e) 
+        {
+            gotException = true;
+        }
+        assert !gotException : "got unexpected InvalidRequestException";
+    }
+    
     @Test
     public void testColumnNameEqualToKeyAlias()
     {
