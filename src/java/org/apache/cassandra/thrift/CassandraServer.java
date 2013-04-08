@@ -834,7 +834,6 @@ public class CassandraServer implements Cassandra.Iface
             }
             else 
             {
-                //todo super columns?
                 rm.deleteRange(cfName, del.predicate.getSlice_range().start, del.predicate.getSlice_range().finish, del.timestamp);
             }
         } 
