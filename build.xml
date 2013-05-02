@@ -1143,6 +1143,14 @@
       <jvmarg value="-Dcassandra.test-serialization-writes=True"/>
     </testmacro>
   </target>
+
+   <target name="end-to-end" depends="build-test" description="Generates message serializations">
+    <testmacro suitename="unit" inputdir="${test.unit.src}"
+               timeout="60000" filter="**/EndToEndTest.java">
+      <jvmarg value="-Dcassandra.test-serialization-writes=True"/>
+    </testmacro>
+  </target>
+
   
   <target name="msg-ser-test" depends="build-test" description="Tests message serializations">
     <testmacro suitename="unit" inputdir="${test.unit.src}" timeout="60000"

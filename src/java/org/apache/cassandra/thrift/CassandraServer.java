@@ -834,7 +834,14 @@ public class CassandraServer implements Cassandra.Iface
             }
             else 
             {
-                rm.deleteRange(cfName, del.predicate.getSlice_range().start, del.predicate.getSlice_range().finish, del.timestamp);
+                if (del.super_column == null && Schema.instance.getColumnFamilyType(rm.getTable(), cfName) == ColumnFamilyType.Super)
+                    rm.deleteRange(cfName, SuperColumns.startOf(del.predicate.getSlice_range().start), 
+                            SuperColumns.startOf(del.predicate.getSlice_range().finish), del.timestamp);
+                else if (del.super_column != null)
+                    rm.deleteRange(cfName, CompositeType.build(del.super_column, del.predicate.getSlice_range().start), 
+                            CompositeType.build(del.super_column, del.predicate.getSlice_range().finish), del.timestamp  );
+                else    
+                    rm.deleteRange(cfName, del.predicate.getSlice_range().start, del.predicate.getSlice_range().finish, del.timestamp);
             }
         } 
         else
